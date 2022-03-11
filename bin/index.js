@@ -75,7 +75,7 @@ const getUsers = async (awsProfile, awsPoolId, mwtFileName) => {
     }
 
     // Now write the data out to a file
-    await writeUsers(allUsers,mwtFileName);
+    writeUsers(allUsers,mwtFileName);
 
     console.log(`File: ${mwtFileName} contains ${allUsers.length} users`);
   } catch (e) {
