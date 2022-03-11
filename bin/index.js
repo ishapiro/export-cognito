@@ -91,7 +91,7 @@ const writeUsers = (userList, myFileName) => {
   // Create the file with a csv header for the first row
   //
 
-  fs.writeFileSync(myFileName,'"username","email"');
+  fs.writeFileSync(myFileName,'"username","email"\n');
 
   //
   // Loop through the users
