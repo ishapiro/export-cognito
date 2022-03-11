@@ -12,6 +12,12 @@ then use the following npm command:
 npm install -g .
 ```
 
+Alternatively you can run this utility from the root directory with the following node command:
+
+```shell
+node .
+```
+
 ## Usage
 
 To use as a CLI command type export-cognito.   You will then be prompted for:
