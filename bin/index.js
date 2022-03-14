@@ -2,11 +2,11 @@
 
 /**
  * @index.js
- *  
+ *
  * This is the main component of the cognito export utility.
- * 
+ *
  * Author: Irv Shapiro
- * 
+ *
  * License: MIT Open Source
  */
 
@@ -15,7 +15,7 @@ const AWS = require("aws-sdk");
 const DELAY = require("delay");
 const delay = require("delay");
 
-// Since this utility reads 
+// Since this utility reads
 let csvData = [];
 
 console.log("Starting cognito export");
@@ -42,11 +42,11 @@ const getUsers = async (awsProfile, awsPoolId, mwtFileName) => {
 
     const cognito = new AWS.CognitoIdentityServiceProvider();
 
-    //  AttributesToGet: ["email"],
     while (more) {
       let params = {
         UserPoolId: awsPoolId,
         Limit: 50,
+        // AttributesToGet: ["email"],
       };
 
       if (typeof paginationToken != "undefined") {
@@ -57,25 +57,27 @@ const getUsers = async (awsProfile, awsPoolId, mwtFileName) => {
       let rawUsers;
       try {
         rawUsers = await cognito.listUsers(params).promise();
-        if (typeof rawUsers.Users != "undefined") allUsers = allUsers.concat(rawUsers.Users);
-      } catch(err) {
-        // skip this user
-        console.log(err.message);
+        if (typeof rawUsers.Users != "undefined")
+          allUsers = allUsers.concat(rawUsers.Users);
+      } catch (err) {
+        console.error(err.message);
       }
 
       // Now move on to the next users even if the previous user generated an error
       console.log(allUsers.length);
 
-      if (typeof rawUsers.PaginationToken != "undefined") {
-        paginationToken = rawUsers.PaginationToken;
-      } else {
-        more = false;
+      if (typeof rawUsers != "undefined") {
+        if (typeof rawUsers.PaginationToken != "undefined") {
+          paginationToken = rawUsers.PaginationToken;
+        } else {
+          more = false;
+        }
+        await delay(10);
       }
-      await delay(1000);
     }
 
     // Now write the data out to a file
-    writeUsers(allUsers,mwtFileName);
+    writeUsers(allUsers, mwtFileName);
 
     console.log(`File: ${mwtFileName} contains ${allUsers.length} users`);
   } catch (e) {
@@ -91,7 +93,7 @@ const writeUsers = (userList, myFileName) => {
   // Create the file with a csv header for the first row
   //
 
-  fs.writeFileSync(myFileName,'"username","email"\n');
+  fs.writeFileSync(myFileName, '"username","email"\n');
 
   //
   // Loop through the users
@@ -100,8 +102,19 @@ const writeUsers = (userList, myFileName) => {
   userList.forEach(function (each) {
     // console.log(JSON.stringify(each, null, 2));
     //console.log(each.Username, each.Attributes[0].Value);
+
+    let currentEmail = "";
+
+    each.Attributes.forEach(function (attribute) {
+      if (attribute.Name == "email") {
+        currentEmail = attribute.Value;
+      } else {
+        currentEmail = "";
+      }
+    });
+
     try {
-      fs.appendFileSync(myFileName, `"${each.Username}","${each.Attributes[0].Value}"\n`);
+      fs.appendFileSync(myFileName, `"${each.Username}","${currentEmail}"\n`);
     } catch (error) {
       console.log(error);
     }
